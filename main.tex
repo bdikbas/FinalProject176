@@ -1,0 +1,141 @@
+i\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2020
+
+% ready for submission
+% \usepackage{neurips_2020}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2020}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2020}
+
+% to avoid loading the natbib package, add option nonatbib:
+     \usepackage[nonatbib]{neurips_2020}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+
+\title{Project Report - ECE 176}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+\author{%
+  Dominic Colucci \\
+  CSE Department\\
+  A17282564\\
+  % examples of more authors
+  \And
+  Burak Dikbas \\
+  ECE Department\\
+  A17677949\\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+    We study how architectural inductive bias affects image classification performance on CIFAR-100 by comparing a ladder of models with increasing structure: a linear classifier, a multilayer perceptron (MLP), a shallow convolutional neural network (CNN), and a deeper residual network. The goal is to isolate how much performance gain comes from image-aligned architectural priors such as locality, weight sharing, depth, and hierarchical feature extraction. In addition to the model ladder, we perform controlled ablations on Batch Normalization and learning-rate scheduling to evaluate how optimization choices interact with architecture. Across experiments, we keep preprocessing, data splits, training budget, and evaluation protocol as consistent as possible. Our report analyzes accuracy, loss curves, optimization stability, and overfitting behavior to explain not only which model performs best, but also why deeper convolutional architectures are more effective than vector-based baselines on natural images.    
+
+\end{abstract}
+
+\section{Introduction}
+
+\begin{itemize}
+    \item Image classification performance depends not only on parameter count, but also on how well a model's structure matches the data. Earlier vector-based baselines such as linear classifiers and MLPs treat an image as a flattened array, which discards spatial locality and translation structure. For natural images, this is a major limitation because useful visual information often appears as local edges, textures, and compositional patterns.
+
+    \item In this project, we investigate the following question: \textit{how does architectural inductive bias influence image classification performance on CIFAR-100, and to what extent do deeper convolutional models outperform vector-based baselines under matched training conditions?} Our original proposal compared linear, MLP, and small CNN models. Based on feedback, we extend this ladder with a deeper architecture, specifically a residual network, so that the argument about inductive bias is more complete. This allows us to compare not only vector-based models versus convolutional models, but also shallow convolutional models versus deeper hierarchical feature extractors.
+
+    \item We also broaden the ablation study by evaluating two training-design choices that can substantially affect optimization: Batch Normalization and learning-rate schedules. These additions strengthen the report because they help separate architectural gains from optimization gains. If a deeper model improves mainly because it trains more stably with normalization or scheduling, that is important to document. If it still wins under controlled settings, then the case for stronger inductive bias becomes more compelling.
+
+    \item Our core hypothesis is that performance should improve as the model architecture becomes more aligned with image structure. We expect the linear classifier to underfit, the MLP to improve capacity but remain limited by the lack of spatial priors, the shallow CNN to achieve a significant jump by exploiting local patterns, and the deeper residual network to perform best by learning multi-scale hierarchical representations more efficiently.
+\end{itemize}
+
+\section{Related Work}
+
+Convolutional neural networks became the dominant paradigm for image recognition because they encode locality and weight sharing, which significantly reduce the burden of learning image structure from data alone. AlexNet demonstrated that deep convolutional architectures can learn highly effective visual representations when trained end-to-end on large-scale image data, showing the power of depth and hierarchical feature extraction in practice.
+
+Residual networks further extended this idea by introducing skip connections, enabling substantially deeper architectures to train reliably. Rather than only increasing parameter count, ResNets improve optimization and representation learning by making it easier to propagate gradients through many layers. This makes them a strong choice for our deeper model in the architecture ladder.
+
+Batch Normalization is also closely related to our study because it changes optimization dynamics and often allows deeper models to train faster and more stably. Since our report aims to distinguish architectural effects from training effects, including BatchNorm as an ablation is well-motivated.
+
+The CIFAR benchmark has long been used to compare model families under relatively controlled conditions. CIFAR-100 is especially relevant here because it is difficult enough that differences in model inductive bias become visible: there are 100 classes, fewer examples per class than CIFAR-10, and stronger pressure to learn transferable visual structure.
+
+The most relevant prior works for our report are therefore: \textit{Deep Learning} by Goodfellow et al. for the general framing of inductive bias and neural architectures, AlexNet for deep convolutional image recognition, ResNet for deeper hierarchical architectures with skip connections, and Batch Normalization for normalization-based stabilization during training.
+
+\section{Method}
+
+\subsection{Problem Setup}
+We consider supervised image classification on CIFAR-100. Each input image is an RGB image of size $32 \times 32 \times 3$, and the target is one of 100 semantic classes. Let $x \in \mathbb{R}^{32\times32\times3}$ denote an image and $y \in \{1,\dots,100\}$ its class label. Each model outputs logits $f_\theta(x) \in \mathbb{R}^{100}$, which are converted to class probabilities with the softmax function. Training minimizes cross-entropy loss.
+
+\subsection{Model Ladder}
+To study inductive bias systematically, we compare the following model families.
+
+\paragraph{Linear classifier.}
+The linear baseline flattens the input image into a vector and applies a single affine transformation followed by softmax. This model has minimal inductive bias and serves as the weakest baseline.
+
+\paragraph{MLP.}
+The MLP also operates on flattened inputs, but adds nonlinear hidden layers with ReLU activations. This increases representational capacity while still ignoring explicit spatial structure.
+
+\paragraph{Shallow CNN.}
+The shallow CNN uses convolution, ReLU activations, and pooling to exploit local spatial patterns. A representative architecture is:
+
+\begin{center}
+\texttt{Conv(3x3) - ReLU - Conv(3x3) - ReLU - MaxPool - Conv(3x3) - ReLU - Conv(3x3) - ReLU - MaxPool - FC - Softmax}
+\end{center}
+
+This model adds locality and weight sharing while remaining lightweight enough for controlled comparison.
+
+\section{Experiments}
+
+Our experiments are designed to answer the following questions:
+\begin{enumerate}[leftmargin=1.5em]
+    \item How much performance improvement comes from moving from vector-based models to convolutional models?
+    \item Does a deeper residual architecture outperform a shallow CNN under a comparable training setup?
+    \item How much of the gain is explained by BatchNorm?
+    \item How sensitive are different model families to learning-rate scheduling?
+\end{enumerate}
+
+In the current implementation documented in the supplementary notebook, we establish the core comparison between three model families: a linear classifier, a multilayer perceptron (MLP), and a shallow convolutional neural network (CNN). All models are trained on CIFAR-100 using the same normalized input pipeline and a consistent train/validation/test split. The training setup uses cross-entropy loss with SGD, momentum, and weight decay so that differences in performance can be attributed primarily to architectural choice rather than to unrelated changes in optimization.
+
+The CIFAR-100 dataset is preprocessed using standard channel-wise normalization, and the training set is split into training and validation subsets with a fixed random seed for reproducibility. For the main fair-comparison experiments shown in the notebook, no data augmentation is applied. This allows the linear model, MLP, and CNN to be compared under matched input conditions.
+
+The implemented models form a progression of increasing inductive bias. The linear classifier treats each image as a flattened vector and applies a single affine transformation to predict one of 100 classes. The MLP introduces nonlinear hidden layers, allowing more expressive decision boundaries, but it still operates on flattened image inputs and therefore does not explicitly preserve spatial structure. The shallow CNN, by contrast, applies stacked convolution and pooling layers before a fully connected classifier, enabling the model to exploit local spatial correlations and translation-sensitive visual features.
+
+The results from the notebook show a clear performance gap across these model families. The linear classifier achieves a test accuracy of approximately 14.34\%, the MLP improves substantially to about 26.00\%, and the shallow CNN achieves about 24.86\% test accuracy. These results show that moving beyond a purely linear baseline provides a large gain, and that architectural structure matters substantially on CIFAR-100. In particular, the MLP and CNN both outperform the linear baseline by a wide margin, confirming that additional representational capacity is essential for this task. The CNN also attains the best validation accuracy among the convolutional experiments shown in the notebook, demonstrating the value of spatially structured feature extraction.
+
+
+\section{Supplementary Material}
+
+You should also include a video recording a presentation (with motivation, approach, results) for this project.
+
+\section*{References}
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item Ian Goodfellow, Yoshua Bengio, and Aaron Courville. \textit{Deep Learning}. MIT Press, 2016.
+    \item Alex Krizhevsky. \textit{Learning Multiple Layers of Features from Tiny Images}. University of Toronto, 2009.
+    \item Alex Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. ImageNet classification with deep convolutional neural networks. In \textit{Advances in Neural Information Processing Systems}, 2012.
+    \item Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, 2016.
+    \item Sergey Ioffe and Christian Szegedy. Batch normalization: Accelerating deep network training by reducing internal covariate shift. In \textit{Proceedings of the International Conference on Machine Learning}, 2015.
+    \item Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhutdinov. Dropout: A simple way to prevent neural networks from overfitting. \textit{Journal of Machine Learning Research}, 2014.
+\end{enumerate}
+
+\end{document}
