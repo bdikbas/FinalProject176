@@ -40,7 +40,6 @@ i\documentclass{article}
   Dominic Colucci \\
   CSE Department\\
   A17282564\\
-  % examples of more authors
   \And
   Burak Dikbas \\
   ECE Department\\
@@ -71,7 +70,7 @@ i\documentclass{article}
 
 \section{Related Work}
 
-Convolutional neural networks became the dominant paradigm for image recognition because they encode locality and weight sharing, which significantly reduce the burden of learning image structure from data alone. AlexNet demonstrated that deep convolutional architectures can learn highly effective visual representations when trained end-to-end on large-scale image data, showing the power of depth and hierarchical feature extraction in practice.
+Convolutional neural networks became the most dominant paradigm for image recognition due to the fact that they are able to encode not only locality, but also weight sharing. This is able to significantly reduce the burden of learning image structure from just data alone. AlexNet demonstrated that deep convolutional architectures are able to learn highly effective visual representations when they are trained end-to-end on large-scale image data. This shows how powerful depth and hierarchical feature extraction are in practice.
 
 Residual networks further extended this idea by introducing skip connections, enabling substantially deeper architectures to train reliably. Rather than only increasing parameter count, ResNets improve optimization and representation learning by making it easier to propagate gradients through many layers. This makes them a strong choice for our deeper model in the architecture ladder.
 
@@ -114,14 +113,13 @@ Our experiments are designed to answer the following questions:
     \item How sensitive are different model families to learning-rate scheduling?
 \end{enumerate}
 
-In the current implementation documented in the supplementary notebook, we establish the core comparison between three model families: a linear classifier, a multilayer perceptron (MLP), and a shallow convolutional neural network (CNN). All models are trained on CIFAR-100 using the same normalized input pipeline and a consistent train/validation/test split. The training setup uses cross-entropy loss with SGD, momentum, and weight decay so that differences in performance can be attributed primarily to architectural choice rather than to unrelated changes in optimization.
+In the current implementation documented in the supplementary notebook, we establish a broader comparison across four model families: a linear classifier, a multilayer perceptron (MLP), a shallow convolutional neural network (CNN), and a CIFAR-adapted ResNet-18. All models are trained on CIFAR-100 using the same normalized input pipeline and a consistent train/validation/test split. The training setup uses cross-entropy loss with SGD, momentum, and weight decay so that differences in performance can be attributed primarily to architectural choice rather than unrelated optimization changes.
 
-The CIFAR-100 dataset is preprocessed using standard channel-wise normalization, and the training set is split into training and validation subsets with a fixed random seed for reproducibility. For the main fair-comparison experiments shown in the notebook, no data augmentation is applied. This allows the linear model, MLP, and CNN to be compared under matched input conditions.
+The CIFAR-100 dataset is preprocessed using standard channel-wise normalization, and the original training set is split into train and validation subsets with a fixed random seed for reproducibility. For the core fair-comparison experiments, no data augmentation is applied; augmentation is defined separately only for additional CNN experiments. This ensures that the linear model, MLP, shallow CNN, and ResNet-18 are compared under matched input conditions.
 
-The implemented models form a progression of increasing inductive bias. The linear classifier treats each image as a flattened vector and applies a single affine transformation to predict one of 100 classes. The MLP introduces nonlinear hidden layers, allowing more expressive decision boundaries, but it still operates on flattened image inputs and therefore does not explicitly preserve spatial structure. The shallow CNN, by contrast, applies stacked convolution and pooling layers before a fully connected classifier, enabling the model to exploit local spatial correlations and translation-sensitive visual features.
+From the models that we tested, they can be thought of as a progression from really simple architectures to ones that are much more complex and better designed for image data. With a linear classifier, we can see that it is the simplest and that it flattens an image into a vector and then uses one linear layer so that it can make a prediction. For MLP, it is a step up over this. It adds nonlinear hidden layers that allow it to be much more flexible, but it is also still able to work with images that are flattened and it also doesn’t need to keep the spatial structure. The shallow CNN is the most appropriate for this task due to the fact that it utilizes convolution and also pools layers to learn local visual features before classification. Finally, ResNet-18 is able to take this idea of CNN and convolution further by using a deeper convolution architecture that includes residual connections, batch normalization, and global average pooling. All of these tools help it learn much more complex image features while still being able to be trained.
 
-The results from the notebook show a clear performance gap across these model families. The linear classifier achieves a test accuracy of approximately 14.34\%, the MLP improves substantially to about 26.00\%, and the shallow CNN achieves about 24.86\% test accuracy. These results show that moving beyond a purely linear baseline provides a large gain, and that architectural structure matters substantially on CIFAR-100. In particular, the MLP and CNN both outperform the linear baseline by a wide margin, confirming that additional representational capacity is essential for this task. The CNN also attains the best validation accuracy among the convolutional experiments shown in the notebook, demonstrating the value of spatially structured feature extraction.
-
+Based on the results from the notebook, we can see a clear trend across the different model types. The linear classifier gives the lowest test accuracy at 13.97\%, while the MLP improves to 26.60\%. The shallow CNN does much better at 37.56\%, and ResNet-18 performs the best with a test accuracy of 50.16\%. The validation accuracies follow the same pattern, going from 14.54\% for the linear model to 26.34\% for the MLP, 37.66\% for the shallow CNN, and 48.40\% for ResNet-18. Overall, these results suggest that models designed to better capture image structure perform much better on CIFAR-100, with the deeper residual model giving the strongest results out of all the architectures we tested.
 
 \section{Supplementary Material}
 
