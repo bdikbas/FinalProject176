@@ -119,11 +119,9 @@ The CIFAR-100 dataset is preprocessed using standard channel-wise normalization,
 
 From the models that we tested, they can be thought of as a progression from really simple architectures to ones that are much more complex and better designed for image data. With a linear classifier, we can see that it is the simplest and that it flattens an image into a vector and then uses one linear layer so that it can make a prediction. For MLP, it is a step up over this. It adds nonlinear hidden layers that allow it to be much more flexible, but it is also still able to work with images that are flattened and it also doesn’t need to keep the spatial structure. The shallow CNN is the most appropriate for this task due to the fact that it utilizes convolution and also pools layers to learn local visual features before classification. Finally, ResNet-18 is able to take this idea of CNN and convolution further by using a deeper convolution architecture that includes residual connections, batch normalization, and global average pooling. All of these tools help it learn much more complex image features while still being able to be trained.
 
+\section{Results}
+
 Based on the results from the notebook, we can see a clear trend across the different model types. The linear classifier gives the lowest test accuracy at 13.97\%, while the MLP improves to 26.60\%. The shallow CNN does much better at 37.56\%, and ResNet-18 performs the best with a test accuracy of 50.16\%. The validation accuracies follow the same pattern, going from 14.54\% for the linear model to 26.34\% for the MLP, 37.66\% for the shallow CNN, and 48.40\% for ResNet-18. Overall, these results suggest that models designed to better capture image structure perform much better on CIFAR-100, with the deeper residual model giving the strongest results out of all the architectures we tested.
-
-\section{Supplementary Material}
-
-You should also include a video recording a presentation (with motivation, approach, results) for this project.
 
 \section*{References}
 
