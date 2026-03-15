@@ -1,4 +1,4 @@
-i\documentclass{article}
+\documentclass{article}
 
 % if you need to pass options to natbib, use, e.g.:
 %     \PassOptionsToPackage{numbers, compress}{natbib}
@@ -26,7 +26,7 @@ i\documentclass{article}
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 
-\title{Project Report - ECE 176}
+\title{Architectural Inductive Bias and Image Classification Performance on CIFAR-100 - ECE 176}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -106,7 +106,7 @@ This model adds locality and weight sharing while remaining lightweight enough f
 \section{Experiments}
 
 Our experiments are designed to answer the following questions:
-\begin{enumerate}[leftmargin=1.5em]
+\begin{enumerate}
     \item How much performance improvement comes from moving from vector-based models to convolutional models?
     \item Does a deeper residual architecture outperform a shallow CNN under a comparable training setup?
     \item How much of the gain is explained by BatchNorm?
@@ -125,8 +125,8 @@ Based on the results from the notebook, we can see a clear trend across the diff
 
 \section*{References}
 
-\begin{enumerate}[leftmargin=1.5em]
-    \item Ian Goodfellow, Yoshua Bengio, and Aaron Courville. \textit{Deep Learning}. MIT Press, 2016.
+\begin{enumerate}
+    \item Ian Goodfellow, Yoshua Bengio, and Aaron Courville. \emph{Deep Learning}. MIT Press, 2016.
     \item Alex Krizhevsky. \textit{Learning Multiple Layers of Features from Tiny Images}. University of Toronto, 2009.
     \item Alex Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. ImageNet classification with deep convolutional neural networks. In \textit{Advances in Neural Information Processing Systems}, 2012.
     \item Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, 2016.
